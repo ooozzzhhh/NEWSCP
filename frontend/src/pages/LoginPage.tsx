@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '@/api/auth'
@@ -12,6 +12,12 @@ export function LoginPage() {
   const [tenantId, setTenantId] = useState('demo-tenant')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [enterReady, setEnterReady] = useState(false)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setEnterReady(true), 60)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -33,31 +39,79 @@ export function LoginPage() {
   }
 
   return (
-    <div className="login-wrap">
-      <form className="login-card" onSubmit={onSubmit}>
-        <h1>NEWSCP 登录</h1>
-        <p className="subtext">默认账号：admin / 123456</p>
-        <label>
-          租户 ID
-          <input value={tenantId} onChange={(e) => setTenantId(e.target.value)} />
-        </label>
-        <label>
-          用户名
-          <input value={username} onChange={(e) => setUsername(e.target.value)} />
-        </label>
-        <label>
-          密码
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? '登录中...' : '登录'}
-        </button>
-      </form>
+    <div className={`login-shell ${enterReady ? 'login-shell-enter' : ''}`}>
+      <div className="login-aurora login-aurora-cyan" />
+      <div className="login-aurora login-aurora-blue" />
+      <div className="login-bg login-bg-cyan" />
+      <div className="login-bg login-bg-amber" />
+      <div className="login-grid-overlay" />
+      <main className="login-layout">
+        <section className="login-hero">
+          <div className="login-brand-block">
+            <p className="login-brand-mark">UHA</p>
+            <p className="login-brand-name">supply chain planning</p>
+          </div>
+          <h1>Plan Faster. Deliver Better.</h1>
+          <p className="login-hero-copy">
+            统一连接需求预测、库存策略与订单协同，让供应链计划从“被动响应”升级为“主动掌控”。
+          </p>
+          <div className="login-kpi-list">
+            <article>
+              <span>Forecast</span>
+              <strong>AI-assisted</strong>
+            </article>
+            <article>
+              <span>Visibility</span>
+              <strong>End-to-End</strong>
+            </article>
+            <article>
+              <span>Response</span>
+              <strong>Real-time</strong>
+            </article>
+          </div>
+        </section>
+        <section className="login-panel">
+          <form className="login-card" onSubmit={onSubmit}>
+            <div className="login-card-head">
+              <h2>欢迎回来</h2>
+              <p>默认账号：admin / 123456</p>
+            </div>
+            <label className="login-field" htmlFor="tenantId">
+              租户 ID
+            </label>
+            <input
+              id="tenantId"
+              value={tenantId}
+              onChange={(e) => setTenantId(e.target.value)}
+              autoComplete="organization"
+            />
+            <label className="login-field" htmlFor="username">
+              用户名
+            </label>
+            <input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+            />
+            <label className="login-field" htmlFor="password">
+              密码
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+            {error && <p className="error">{error}</p>}
+            <button className="login-submit" type="submit" disabled={loading}>
+              {loading ? '登录中...' : '进入 UHA 工作台'}
+            </button>
+          </form>
+          <p className="login-footnote">Secure by design · Multi-tenant ready</p>
+        </section>
+      </main>
     </div>
   )
 }
