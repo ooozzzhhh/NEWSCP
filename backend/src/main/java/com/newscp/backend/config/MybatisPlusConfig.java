@@ -2,7 +2,9 @@ package com.newscp.backend.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+import com.baomidou.mybatisplus.annotation.DbType;
 import com.newscp.backend.tenant.TenantContext;
 import java.util.Set;
 import net.sf.jsqlparser.expression.Expression;
@@ -14,7 +16,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MybatisPlusConfig {
 
-    private static final Set<String> IGNORE_TENANT_TABLES = Set.of("nscp_sys_tenant");
+    private static final Set<String> IGNORE_TENANT_TABLES = Set.of(
+            "nscp_sys_tenant",
+            "nscp_sys_permission",
+            "nscp_sys_role_permission",
+            "nscp_sys_user_role",
+            "nscp_sys_user_dept"
+    );
 
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
@@ -40,6 +48,7 @@ public class MybatisPlusConfig {
                 return columns.stream().map(Column::getColumnName).anyMatch(tenantIdColumn::equalsIgnoreCase);
             }
         }));
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }
 }

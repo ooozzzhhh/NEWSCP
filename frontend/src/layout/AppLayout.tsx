@@ -1,18 +1,11 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
-
-const menus = [
-  { path: '/app/dashboard', label: '仪表盘' },
-  { path: '/app/customer', label: '客户' },
-  { path: '/app/forecast', label: '预测' },
-  { path: '/app/safety-stock', label: '安全库存' },
-  { path: '/app/order', label: '客户订单' },
-  { path: '/app/charts', label: '分析看板' },
-]
+import type { MenuNode } from '@/types/menu'
 
 export function AppLayout() {
   const navigate = useNavigate()
   const session = useAuthStore((s) => s.session)
+  const menus = useAuthStore((s) => s.menus)
   const clearSession = useAuthStore((s) => s.clearSession)
 
   const logout = () => {
@@ -25,21 +18,16 @@ export function AppLayout() {
       <aside className="sidebar">
         <h1 className="brand">NEWSCP</h1>
         <nav>
-          {menus.map((menu) => (
-            <NavLink
-              key={menu.path}
-              to={menu.path}
-              className={({ isActive }) => (isActive ? 'menu-item active' : 'menu-item')}
-            >
-              {menu.label}
-            </NavLink>
-          ))}
+          <NavLink to="/app/dashboard" className={({ isActive }) => (isActive ? 'menu-item active' : 'menu-item')}>
+            仪表盘
+          </NavLink>
+          {menus.map((menu) => renderMenuNode(menu))}
         </nav>
       </aside>
       <div className="content-area">
         <header className="topbar">
           <div>
-            <strong>{session?.username}</strong>
+            <strong>{session?.realName || session?.username}</strong>
             <span className="subtext">Tenant: {session?.tenantId}</span>
           </div>
           <button className="ghost-btn" onClick={logout}>
@@ -51,5 +39,34 @@ export function AppLayout() {
         </main>
       </div>
     </div>
+  )
+}
+
+function renderMenuNode(node: MenuNode, level = 0) {
+  const hasChildren = node.children && node.children.length > 0
+  if (hasChildren) {
+    return (
+      <div key={node.id} className="menu-group">
+        <div className="menu-group-label" style={{ paddingLeft: `${10 + level * 12}px` }}>
+          {node.permName}
+        </div>
+        {node.children.map((child) => renderMenuNode(child, level + 1))}
+      </div>
+    )
+  }
+
+  if (!node.routePath) {
+    return null
+  }
+
+  return (
+    <NavLink
+      key={node.id}
+      to={node.routePath}
+      className={({ isActive }) => (isActive ? 'menu-item active' : 'menu-item')}
+      style={{ paddingLeft: `${10 + level * 12}px` }}
+    >
+      {node.permName}
+    </NavLink>
   )
 }

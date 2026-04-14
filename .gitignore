@@ -1,5 +1,6 @@
 # 仓库根目录本地缓存（勿提交）
 .gradle/
+.gradle-home/
 .gradle-dist/
 .m2/
 .npm-cache/
@@ -7,6 +8,9 @@
 # 压缩包与大型二进制归档
 *.zip
 *.7z
+
+# 本地草稿/实验目录（勿提交）
+temp-work/
 
 # 日志与临时文件
 *.log

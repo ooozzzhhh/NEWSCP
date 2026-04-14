@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '@/api/auth'
+import { fetchMenu } from '@/api/menu'
 import { useAuthStore } from '@/stores/auth-store'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const setSession = useAuthStore((s) => s.setSession)
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('123456')
+  const setMenus = useAuthStore((s) => s.setMenus)
+  const setPermissions = useAuthStore((s) => s.setPermissions)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [tenantId, setTenantId] = useState('demo-tenant')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -30,6 +33,11 @@ export function LoginPage() {
         return
       }
       setSession(res.data)
+      const menuRes = await fetchMenu()
+      if (menuRes.code === 0) {
+        setMenus(menuRes.data.menus)
+        setPermissions(menuRes.data.permissions)
+      }
       navigate('/app/dashboard', { replace: true })
     } catch {
       setError('登录失败，请检查后端服务和账号信息')
@@ -74,7 +82,7 @@ export function LoginPage() {
           <form className="login-card" onSubmit={onSubmit}>
             <div className="login-card-head">
               <h2>欢迎回来</h2>
-              <p>默认账号：admin / 123456</p>
+              <p>输入你的租户、用户名和密码登录系统</p>
             </div>
             <label className="login-field" htmlFor="tenantId">
               租户 ID
@@ -84,6 +92,7 @@ export function LoginPage() {
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
               autoComplete="organization"
+              placeholder="例如 demo-tenant"
             />
             <label className="login-field" htmlFor="username">
               用户名

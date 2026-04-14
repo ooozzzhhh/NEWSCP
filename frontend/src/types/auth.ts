@@ -4,6 +4,7 @@ export interface LoginPayload {
   expiresIn: number
   userId: string
   username: string
+  realName: string
   tenantId: string
   roles: string[]
 }
@@ -20,6 +21,7 @@ export interface AuthSession {
   expiresIn: number
   userId: string
   username: string
+  realName: string
   tenantId: string
   roles: string[]
 }

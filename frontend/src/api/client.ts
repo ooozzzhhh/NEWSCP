@@ -22,6 +22,10 @@ client.interceptors.response.use(
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
+    } else if (error.response?.status === 403) {
+      if (!window.location.pathname.startsWith('/app/403')) {
+        window.location.href = '/app/403'
+      }
     }
     return Promise.reject(error)
   },

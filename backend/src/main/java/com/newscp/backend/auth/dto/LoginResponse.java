@@ -8,6 +8,7 @@ public record LoginResponse(
         long expiresIn,
         String userId,
         String username,
+        String realName,
         String tenantId,
         List<String> roles
 ) {

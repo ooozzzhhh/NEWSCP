@@ -24,12 +24,13 @@ public class JwtTokenProvider {
         this.expirationSeconds = expirationSeconds;
     }
 
-    public String generateToken(String userId, String username, String tenantId, List<String> roles) {
+    public String generateToken(String userId, String username, String realName, String tenantId, List<String> roles) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationSeconds * 1000);
         return Jwts.builder()
                 .subject(userId)
                 .claim("username", username)
+                .claim("realName", realName)
                 .claim("tenantId", tenantId)
                 .claim("roles", roles)
                 .issuedAt(now)
