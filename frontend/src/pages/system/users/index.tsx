@@ -313,26 +313,28 @@ export default function UserManagementPage() {
                   </td>
                   <td>{formatDate(row.createdAt)}</td>
                   <td className="action-cell">
-                    {canUpdate && (
-                      <button className="text-btn" onClick={() => void openEdit(row.id)}>
-                        编辑
-                      </button>
-                    )}
-                    {canUpdate && (
-                      <button className="text-btn" onClick={() => void handleToggleStatus(row)}>
-                        {row.status === 'ACTIVE' ? '禁用' : '启用'}
-                      </button>
-                    )}
-                    {canReset && (
-                      <button className="text-btn" onClick={() => void handleResetPassword(row.id)}>
-                        重置密码
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button className="text-btn danger" onClick={() => void handleDelete(row.id)}>
-                        删除
-                      </button>
-                    )}
+                    <div className="action-cell-inner">
+                      {canUpdate && (
+                        <button className="text-btn" onClick={() => void openEdit(row.id)}>
+                          编辑
+                        </button>
+                      )}
+                      {canUpdate && (
+                        <button className="text-btn" onClick={() => void handleToggleStatus(row)}>
+                          {row.status === 'ACTIVE' ? '禁用' : '启用'}
+                        </button>
+                      )}
+                      {canReset && (
+                        <button className="text-btn" onClick={() => void handleResetPassword(row.id)}>
+                          重置密码
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button className="text-btn danger" onClick={() => void handleDelete(row.id)}>
+                          删除
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

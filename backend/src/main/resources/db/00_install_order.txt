@@ -1,0 +1,12 @@
+NEWSCP 数据库初始化执行顺序（USE nscp_dev; 后按序号执行）
+
+1. schema/01_nscp_sys_identity.sql
+2. schema/02_nscp_sys_organization.sql
+3. schema/03_nscp_sys_tenant.sql
+4. seed/10_seed_permissions_menu.sql
+5. seed/20_seed_roles_users.sql
+6. seed/30_seed_tenant_platform.sql
+
+一键脚本（与历史 stage 对应）：
+- stage1_init.sql  ≈ 1 + 2 + 4 + 5
+- stage2_init.sql  ≈ 3 + 6

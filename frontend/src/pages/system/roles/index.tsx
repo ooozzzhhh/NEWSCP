@@ -232,16 +232,18 @@ export default function RoleManagementPage() {
                   <td>{row.userCount}</td>
                   <td>{row.remark || '-'}</td>
                   <td className="action-cell">
-                    {(canUpdate || canAssign) && (
-                      <button className="text-btn" onClick={() => void openEdit(row.id)}>
-                        分配权限/编辑
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button className="text-btn danger" onClick={() => void handleDelete(row.id)}>
-                        删除
-                      </button>
-                    )}
+                    <div className="action-cell-inner">
+                      {(canUpdate || canAssign) && (
+                        <button className="text-btn" onClick={() => void openEdit(row.id)}>
+                          分配权限/编辑
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button className="text-btn danger" onClick={() => void handleDelete(row.id)}>
+                          删除
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -252,26 +252,28 @@ export default function PermissionOperatePage() {
                 <td>{node.isHidden === 1 ? '隐藏' : '显示'}</td>
                 <td>{node.sortOrder}</td>
                 <td className="action-cell">
-                  {canCreate && node.permType === 'MENU' && (
-                    <button className="text-btn" onClick={() => openCreate(node.id, 'BUTTON')}>
-                      加按钮
-                    </button>
-                  )}
-                  {canCreate && node.permType === 'MENU' && (
-                    <button className="text-btn" onClick={() => openCreate(node.id, 'MENU')}>
-                      加子菜单
-                    </button>
-                  )}
-                  {canUpdate && (
-                    <button className="text-btn" onClick={() => openEdit(node)}>
-                      编辑
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button className="text-btn danger" onClick={() => void handleDelete(node.id)}>
-                      删除
-                    </button>
-                  )}
+                  <div className="action-cell-inner">
+                    {canCreate && node.permType === 'MENU' && (
+                      <button className="text-btn" onClick={() => openCreate(node.id, 'BUTTON')}>
+                        加按钮
+                      </button>
+                    )}
+                    {canCreate && node.permType === 'MENU' && (
+                      <button className="text-btn" onClick={() => openCreate(node.id, 'MENU')}>
+                        加子菜单
+                      </button>
+                    )}
+                    {canUpdate && (
+                      <button className="text-btn" onClick={() => openEdit(node)}>
+                        编辑
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button className="text-btn danger" onClick={() => void handleDelete(node.id)}>
+                        删除
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -732,9 +732,16 @@ a {
   color: #bae6fd;
 }
 
+/* td 上不要用 display:flex，会破坏表格行高与横线对齐；flex 放在内层 */
 .action-cell {
+  vertical-align: middle;
+}
+
+.action-cell-inner {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .text-btn {

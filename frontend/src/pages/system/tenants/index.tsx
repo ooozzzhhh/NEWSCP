@@ -283,16 +283,18 @@ export default function TenantManagementPage() {
                   <td>{row.userCount}</td>
                   <td>{formatDate(row.createdAt)}</td>
                   <td className="action-cell">
-                    {canRead && canUpdate && (
-                      <button className="text-btn" onClick={() => void openEdit(row.id)}>
-                        编辑
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button className="text-btn danger" onClick={() => void handleDelete(row.id)}>
-                        删除
-                      </button>
-                    )}
+                    <div className="action-cell-inner">
+                      {canRead && canUpdate && (
+                        <button className="text-btn" onClick={() => void openEdit(row.id)}>
+                          编辑
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button className="text-btn danger" onClick={() => void handleDelete(row.id)}>
+                          删除
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
