@@ -5,12 +5,18 @@ import type {
   DeptNode,
   DeptUpdatePayload,
   DeptUser,
+  PermissionCreatePayload,
   PermissionNode,
+  PermissionUpdatePayload,
   ResetPasswordResult,
   RoleCreatePayload,
   RoleDetail,
   RoleOption,
   RoleRow,
+  TenantCreatePayload,
+  TenantRow,
+  TenantUpdatePayload,
+  TenantUser,
   RoleUpdatePayload,
   UserCreatePayload,
   UserDetail,
@@ -131,5 +137,71 @@ export async function deleteDept(id: number) {
 
 export async function fetchDeptUsers(id: number) {
   const response = await client.get<ApiResponse<DeptUser[]>>(`/api/sys/depts/${id}/users`)
+  return response.data
+}
+
+export async function fetchTenants(params: {
+  page: number
+  size: number
+  keyword?: string
+  status?: string
+}) {
+  const response = await client.get<ApiResponse<PageResult<TenantRow>>>('/api/sys/tenants', { params })
+  return response.data
+}
+
+export async function fetchTenantDetail(id: number) {
+  const response = await client.get<ApiResponse<TenantRow>>(`/api/sys/tenants/${id}`)
+  return response.data
+}
+
+export async function createTenant(payload: TenantCreatePayload) {
+  const response = await client.post<ApiResponse<number>>('/api/sys/tenants', payload)
+  return response.data
+}
+
+export async function updateTenant(id: number, payload: TenantUpdatePayload) {
+  const response = await client.put<ApiResponse<void>>(`/api/sys/tenants/${id}`, payload)
+  return response.data
+}
+
+export async function deleteTenant(id: number) {
+  const response = await client.delete<ApiResponse<void>>(`/api/sys/tenants/${id}`)
+  return response.data
+}
+
+export async function fetchTenantUsers(id: number) {
+  const response = await client.get<ApiResponse<TenantUser[]>>(`/api/sys/tenants/${id}/users`)
+  return response.data
+}
+
+export async function assignTenantUsers(
+  id: number,
+  payload: {
+    userIds: number[]
+    defaultUserId?: number
+  },
+) {
+  const response = await client.put<ApiResponse<void>>(`/api/sys/tenants/${id}/users`, payload)
+  return response.data
+}
+
+export async function fetchPermissionOperateTree() {
+  const response = await client.get<ApiResponse<PermissionNode[]>>('/api/sys/permissions/operate-tree')
+  return response.data
+}
+
+export async function createPermission(payload: PermissionCreatePayload) {
+  const response = await client.post<ApiResponse<number>>('/api/sys/permissions', payload)
+  return response.data
+}
+
+export async function updatePermission(id: number, payload: PermissionUpdatePayload) {
+  const response = await client.put<ApiResponse<void>>(`/api/sys/permissions/${id}`, payload)
+  return response.data
+}
+
+export async function deletePermission(id: number) {
+  const response = await client.delete<ApiResponse<void>>(`/api/sys/permissions/${id}`)
   return response.data
 }

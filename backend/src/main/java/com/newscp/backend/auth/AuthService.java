@@ -4,11 +4,15 @@ import com.newscp.backend.auth.dto.LoginRequest;
 import com.newscp.backend.auth.dto.LoginResponse;
 import com.newscp.backend.auth.dto.MeResponse;
 import com.newscp.backend.auth.jwt.JwtTokenProvider;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.newscp.backend.common.exception.BusinessException;
 import com.newscp.backend.sys.role.mapper.SysPermissionMapper;
 import com.newscp.backend.sys.role.mapper.SysRoleMapper;
 import com.newscp.backend.sys.user.entity.SysUser;
 import com.newscp.backend.sys.user.mapper.SysUserMapper;
+import com.newscp.backend.tenant.entity.SysTenant;
+import com.newscp.backend.tenant.mapper.SysTenantMapper;
+import com.newscp.backend.tenant.mapper.SysUserTenantMapper;
 import com.newscp.backend.tenant.TenantContext;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -21,13 +25,15 @@ import org.springframework.util.StringUtils;
 @Service
 public class AuthService {
 
-    private static final String DEFAULT_TENANT_ID = "demo-tenant";
+    private static final String DEFAULT_TENANT_ID = "admin";
     private static final int LOCK_THRESHOLD = 5;
     private static final int LOCK_MINUTES = 30;
 
     private final SysUserMapper userMapper;
     private final SysRoleMapper roleMapper;
     private final SysPermissionMapper permissionMapper;
+    private final SysTenantMapper tenantMapper;
+    private final SysUserTenantMapper userTenantMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
@@ -35,12 +41,16 @@ public class AuthService {
             SysUserMapper userMapper,
             SysRoleMapper roleMapper,
             SysPermissionMapper permissionMapper,
+            SysTenantMapper tenantMapper,
+            SysUserTenantMapper userTenantMapper,
             JwtTokenProvider jwtTokenProvider,
             PasswordEncoder passwordEncoder
     ) {
         this.userMapper = userMapper;
         this.roleMapper = roleMapper;
         this.permissionMapper = permissionMapper;
+        this.tenantMapper = tenantMapper;
+        this.userTenantMapper = userTenantMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
     }
@@ -62,6 +72,7 @@ public class AuthService {
         if (user == null) {
             throw new BusinessException("用户名或密码错误");
         }
+        validateTenantLoginScope(user, tenantId);
 
         checkUserStatus(user);
 
@@ -76,7 +87,7 @@ public class AuthService {
 
         handleLoginSuccess(user);
 
-        List<String> roles = roleMapper.selectRoleCodesByUserId(user.getId(), tenantId);
+        List<String> roles = roleMapper.selectRoleCodesByUserIdIgnoreTenant(user.getId());
 
         String token = jwtTokenProvider.generateToken(
                 String.valueOf(user.getId()),
@@ -102,7 +113,7 @@ public class AuthService {
         if (user == null || Integer.valueOf(1).equals(user.getDeleted())) {
             throw new BusinessException("用户不存在");
         }
-        List<String> roleCodes = roleMapper.selectRoleCodesByUserId(user.getId(), user.getTenantId());
+        List<String> roleCodes = roleMapper.selectRoleCodesByUserIdIgnoreTenant(user.getId());
         List<String> permCodes = permissionMapper.selectPermCodesByUserId(user.getId());
         return new MeResponse(
                 userId,
@@ -140,5 +151,29 @@ public class AuthService {
 
     private void handleLoginSuccess(SysUser user) {
         userMapper.recordLoginSuccess(user.getId(), LocalDateTime.now());
+    }
+
+    private void validateTenantLoginScope(SysUser user, String tenantId) {
+        SysTenant tenant = tenantMapper.selectOne(new LambdaQueryWrapper<SysTenant>()
+                .eq(SysTenant::getTenantId, tenantId)
+                .eq(SysTenant::getDeleted, 0)
+                .last("LIMIT 1"));
+        if (tenant == null) {
+            throw new BusinessException("租户不存在");
+        }
+        if (!"ENABLED".equalsIgnoreCase(tenant.getStatus())) {
+            throw new BusinessException("租户已停用，请联系管理员");
+        }
+        if (tenant.getExpireAt() != null && tenant.getExpireAt().isBefore(LocalDateTime.now())) {
+            throw new BusinessException("租户已过期，请联系管理员续期");
+        }
+        long bindCount = userTenantMapper.countBind(user.getId(), tenantId);
+        if (bindCount <= 0) {
+            throw new BusinessException("当前用户未开通该租户访问权限");
+        }
+        List<String> roles = roleMapper.selectRoleCodesByUserIdIgnoreTenant(user.getId());
+        if (roles == null || roles.isEmpty()) {
+            throw new BusinessException("当前用户未分配角色，无法登录");
+        }
     }
 }

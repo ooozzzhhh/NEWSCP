@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   createDept,
   deleteDept,
@@ -247,23 +248,36 @@ export default function DeptManagementPage() {
               <label>部门名称</label>
               <input value={form.deptName} onChange={(e) => setForm((prev) => ({ ...prev, deptName: e.target.value }))} />
               <label>上级部门</label>
-              <select value={form.parentId} onChange={(e) => setForm((prev) => ({ ...prev, parentId: e.target.value }))}>
-                <option value="0">根节点</option>
-                {flat.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.deptName}
-                  </option>
-                ))}
-              </select>
+              <Select value={form.parentId} onValueChange={(value) => setForm((prev) => ({ ...prev, parentId: value || '0' }))}>
+                <SelectTrigger className="app-select-trigger">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="app-select-content">
+                  <SelectItem value="0">根节点</SelectItem>
+                  {flat.map((dept) => (
+                    <SelectItem key={dept.id} value={String(dept.id)}>
+                      {dept.deptName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <label>部门负责人</label>
-              <select value={form.leaderId} onChange={(e) => setForm((prev) => ({ ...prev, leaderId: e.target.value }))}>
-                <option value="">未设置</option>
-                {leaderOptions.map((leader) => (
-                  <option key={leader.id} value={leader.id}>
-                    {leader.label}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={form.leaderId || '__NONE__'}
+                onValueChange={(value) => setForm((prev) => ({ ...prev, leaderId: value && value !== '__NONE__' ? value : '' }))}
+              >
+                <SelectTrigger className="app-select-trigger">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="app-select-content">
+                  <SelectItem value="__NONE__">未设置</SelectItem>
+                  {leaderOptions.map((leader) => (
+                    <SelectItem key={leader.id} value={String(leader.id)}>
+                      {leader.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <label>排序</label>
               <input
                 type="number"

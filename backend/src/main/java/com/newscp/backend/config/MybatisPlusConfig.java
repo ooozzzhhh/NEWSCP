@@ -18,6 +18,7 @@ public class MybatisPlusConfig {
 
     private static final Set<String> IGNORE_TENANT_TABLES = Set.of(
             "nscp_sys_tenant",
+            "nscp_sys_user_tenant",
             "nscp_sys_permission",
             "nscp_sys_role_permission",
             "nscp_sys_user_role",

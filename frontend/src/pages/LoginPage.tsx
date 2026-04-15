@@ -12,7 +12,7 @@ export function LoginPage() {
   const setPermissions = useAuthStore((s) => s.setPermissions)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [tenantId, setTenantId] = useState('demo-tenant')
+  const [tenantId, setTenantId] = useState('admin')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [enterReady, setEnterReady] = useState(false)
@@ -92,7 +92,7 @@ export function LoginPage() {
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
               autoComplete="organization"
-              placeholder="例如 demo-tenant"
+              placeholder="例如 admin"
             />
             <label className="login-field" htmlFor="username">
               用户名

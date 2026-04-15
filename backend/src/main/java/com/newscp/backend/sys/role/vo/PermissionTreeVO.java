@@ -6,6 +6,7 @@ import java.util.List;
 public class PermissionTreeVO {
 
     private Long id;
+    private Long parentId;
     private String permCode;
     private String permName;
     private String permType;
@@ -13,6 +14,8 @@ public class PermissionTreeVO {
     private String componentPath;
     private String icon;
     private Integer sortOrder;
+    private Integer isHidden;
+    private String status;
     private List<PermissionTreeVO> children = new ArrayList<>();
 
     public Long getId() {
@@ -21,6 +24,14 @@ public class PermissionTreeVO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 
     public String getPermCode() {
@@ -77,6 +88,22 @@ public class PermissionTreeVO {
 
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    public Integer getIsHidden() {
+        return isHidden;
+    }
+
+    public void setIsHidden(Integer isHidden) {
+        this.isHidden = isHidden;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public List<PermissionTreeVO> getChildren() {

@@ -42,4 +42,19 @@ public interface SysPermissionMapper extends BaseMapper<SysPermission> {
             ORDER BY parent_id ASC, sort_order ASC, id ASC
             """)
     List<SysPermission> selectAllEnabled();
+
+    @Select("""
+            SELECT *
+            FROM nscp_sys_permission
+            WHERE deleted = 0
+            ORDER BY parent_id ASC, sort_order ASC, id ASC
+            """)
+    List<SysPermission> selectAllIncludeDisabled();
+
+    @Select("""
+            SELECT COUNT(*)
+            FROM nscp_sys_role_permission
+            WHERE perm_id = #{permId}
+            """)
+    long countRoleBindByPermId(@Param("permId") Long permId);
 }

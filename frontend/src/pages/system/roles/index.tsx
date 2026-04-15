@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { PageSizeSelect } from '@/components/PageSizeSelect'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   createRole,
   deleteRole,
@@ -253,14 +255,8 @@ export default function RoleManagementPage() {
           <button className="ghost-btn" disabled={page <= 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
             上一页
           </button>
-          <span>
-            第 {page} 页 / 每页
-            <select value={size} onChange={(e) => setSize(Number(e.target.value))}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-            条
+          <span className="pager-summary">
+            第 {page} 页 / 每页 <PageSizeSelect value={size} onChange={setSize} /> <span className="pager-unit">条</span>
           </span>
           <button className="ghost-btn" disabled={page * size >= total} onClick={() => setPage((p) => p + 1)}>
             下一页
@@ -297,12 +293,10 @@ export default function RoleManagementPage() {
               <label>权限分配</label>
               <div className="permission-tree">
                 {permItems.map((perm) => (
-                  <label key={perm.id} className="permission-item" style={{ paddingLeft: `${perm.level * 18 + 8}px` }}>
-                    <input
-                      type="checkbox"
+                  <label key={perm.id} className="permission-item app-check-label" style={{ paddingLeft: `${perm.level * 18 + 8}px` }}>
+                    <Checkbox
                       checked={form.permIds.includes(perm.id)}
-                      onChange={(e) => {
-                        const checked = e.target.checked
+                      onCheckedChange={(checked) => {
                         setForm((prev) => ({
                           ...prev,
                           permIds: checked

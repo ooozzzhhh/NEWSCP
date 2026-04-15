@@ -84,6 +84,7 @@ export interface RoleOption {
 
 export interface PermissionNode {
   id: number
+  parentId: number
   permCode: string
   permName: string
   permType: 'MENU' | 'BUTTON'
@@ -91,6 +92,8 @@ export interface PermissionNode {
   componentPath?: string
   icon?: string
   sortOrder: number
+  isHidden: number
+  status: 'ENABLED' | 'DISABLED'
   children: PermissionNode[]
 }
 
@@ -142,4 +145,75 @@ export interface DeptUser {
   username: string
   realName: string
   status: string
+}
+
+export interface TenantRow {
+  id: number
+  tenantId: string
+  tenantName: string
+  status: 'ENABLED' | 'DISABLED'
+  expireAt?: string
+  contactName?: string
+  contactPhone?: string
+  contactEmail?: string
+  remark?: string
+  userCount: number
+  createdAt: string
+}
+
+export interface TenantUser {
+  userId: number
+  username: string
+  realName: string
+  userStatus: string
+  isDefault: boolean
+}
+
+export interface TenantCreatePayload {
+  tenantId: string
+  tenantName: string
+  status: 'ENABLED' | 'DISABLED'
+  expireAt?: string
+  contactName?: string
+  contactPhone?: string
+  contactEmail?: string
+  remark?: string
+  userIds: number[]
+  defaultUserId?: number
+}
+
+export interface TenantUpdatePayload {
+  tenantName: string
+  status: 'ENABLED' | 'DISABLED'
+  expireAt?: string
+  contactName?: string
+  contactPhone?: string
+  contactEmail?: string
+  remark?: string
+  userIds: number[]
+  defaultUserId?: number
+}
+
+export interface PermissionCreatePayload {
+  parentId: number
+  permType: 'MENU' | 'BUTTON'
+  permCode: string
+  permName: string
+  routePath?: string
+  componentPath?: string
+  icon?: string
+  sortOrder: number
+  isHidden: number
+  status: 'ENABLED' | 'DISABLED'
+}
+
+export interface PermissionUpdatePayload {
+  parentId: number
+  permName: string
+  routePath?: string
+  componentPath?: string
+  icon?: string
+  sortOrder: number
+  isHidden: number
+  status: 'ENABLED' | 'DISABLED'
 }

@@ -23,6 +23,7 @@ import com.newscp.backend.sys.user.vo.RoleBriefVO;
 import com.newscp.backend.sys.user.vo.UserDetailVO;
 import com.newscp.backend.sys.user.vo.UserVO;
 import com.newscp.backend.tenant.TenantContext;
+import com.newscp.backend.tenant.mapper.SysUserTenantMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ public class UserService {
     private final SysUserRoleMapper userRoleMapper;
     private final SysDeptMapper deptMapper;
     private final SysUserDeptMapper userDeptMapper;
+    private final SysUserTenantMapper userTenantMapper;
     private final PasswordEncoder passwordEncoder;
     private final String defaultPassword;
 
@@ -52,6 +54,7 @@ public class UserService {
             SysUserRoleMapper userRoleMapper,
             SysDeptMapper deptMapper,
             SysUserDeptMapper userDeptMapper,
+            SysUserTenantMapper userTenantMapper,
             PasswordEncoder passwordEncoder,
             @Value("${sys.default.password:Admin@2026}") String defaultPassword
     ) {
@@ -60,6 +63,7 @@ public class UserService {
         this.userRoleMapper = userRoleMapper;
         this.deptMapper = deptMapper;
         this.userDeptMapper = userDeptMapper;
+        this.userTenantMapper = userTenantMapper;
         this.passwordEncoder = passwordEncoder;
         this.defaultPassword = defaultPassword;
     }
@@ -134,6 +138,7 @@ public class UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setDeleted(0);
         userMapper.insertAutoId(user);
+        userTenantMapper.insert(user.getId(), user.getTenantId(), 1, SecurityUtils.getCurrentUserId());
 
         replaceRoles(user.getId(), dto.roleIds());
         replaceDept(user.getId(), dto.deptId());
@@ -190,6 +195,7 @@ public class UserService {
     @Transactional
     public void delete(Long id) {
         getUserOrThrow(id);
+        userTenantMapper.deleteByUserAndTenant(id, TenantContext.getTenantId());
         userRoleMapper.deleteByUserId(id);
         userDeptMapper.deleteByUserId(id);
         userMapper.deleteById(id);

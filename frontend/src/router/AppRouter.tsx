@@ -80,7 +80,7 @@ function buildRoutes(menus: MenuNode[]) {
 
   function walk(nodes: MenuNode[]) {
     nodes.forEach((node) => {
-      if (node.componentPath && routeComponentMap[node.componentPath]) {
+      if (node.status === 'ENABLED' && node.isHidden !== 1 && node.componentPath && routeComponentMap[node.componentPath]) {
         const Component = routeComponentMap[node.componentPath]
         const path = normalizeRoutePath(node.routePath)
         if (path) {

@@ -161,6 +161,7 @@ public class RoleService {
         for (SysPermission p : perms) {
             PermissionTreeVO node = new PermissionTreeVO();
             node.setId(p.getId());
+            node.setParentId(p.getParentId());
             node.setPermCode(p.getPermCode());
             node.setPermName(p.getPermName());
             node.setPermType(p.getPermType());
@@ -168,6 +169,8 @@ public class RoleService {
             node.setComponentPath(p.getComponentPath());
             node.setIcon(p.getIcon());
             node.setSortOrder(p.getSortOrder());
+            node.setIsHidden(p.getIsHidden());
+            node.setStatus(p.getStatus());
             map.put(p.getId(), node);
         }
 

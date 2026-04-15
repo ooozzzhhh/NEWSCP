@@ -40,12 +40,15 @@ public class MenuService {
         for (SysPermission perm : menuPerms) {
             MenuNodeVO node = new MenuNodeVO();
             node.setId(perm.getId());
+            node.setParentId(perm.getParentId());
             node.setPermCode(perm.getPermCode());
             node.setPermName(perm.getPermName());
             node.setRoutePath(perm.getRoutePath());
             node.setComponentPath(perm.getComponentPath());
             node.setIcon(perm.getIcon());
             node.setSortOrder(perm.getSortOrder());
+            node.setIsHidden(perm.getIsHidden());
+            node.setStatus(perm.getStatus());
             nodeMap.put(perm.getId(), node);
         }
 

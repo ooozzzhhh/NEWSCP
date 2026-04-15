@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import { PageSizeSelect } from '@/components/PageSizeSelect'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   createUser,
   deleteUser,
@@ -254,12 +257,17 @@ export default function UserManagementPage() {
       <div className="toolbar-grid">
         <input placeholder="用户名" value={queryUsername} onChange={(e) => setQueryUsername(e.target.value)} />
         <input placeholder="姓名" value={queryRealName} onChange={(e) => setQueryRealName(e.target.value)} />
-        <select value={queryStatus} onChange={(e) => setQueryStatus(e.target.value)}>
-          <option value="">全部状态</option>
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="DISABLED">DISABLED</option>
-          <option value="LOCKED">LOCKED</option>
-        </select>
+        <Select value={queryStatus || 'ALL'} onValueChange={(value) => setQueryStatus(value && value !== 'ALL' ? value : '')}>
+          <SelectTrigger className="app-select-trigger">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="app-select-content">
+            <SelectItem value="ALL">全部状态</SelectItem>
+            <SelectItem value="ACTIVE">ACTIVE</SelectItem>
+            <SelectItem value="DISABLED">DISABLED</SelectItem>
+            <SelectItem value="LOCKED">LOCKED</SelectItem>
+          </SelectContent>
+        </Select>
         <button className="ghost-btn" onClick={() => void handleSearch()}>
           查询
         </button>
@@ -338,14 +346,8 @@ export default function UserManagementPage() {
           <button className="ghost-btn" disabled={page <= 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
             上一页
           </button>
-          <span>
-            第 {page} 页 / 每页
-            <select value={size} onChange={(e) => setSize(Number(e.target.value))}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-            条
+          <span className="pager-summary">
+            第 {page} 页 / 每页 <PageSizeSelect value={size} onChange={setSize} /> <span className="pager-unit">条</span>
           </span>
           <button className="ghost-btn" disabled={page * size >= total} onClick={() => setPage((p) => p + 1)}>
             下一页
@@ -372,30 +374,42 @@ export default function UserManagementPage() {
               <label>真实姓名</label>
               <input value={form.realName} onChange={(e) => setForm((prev) => ({ ...prev, realName: e.target.value }))} />
               <label>用户类型</label>
-              <select value={form.userType} onChange={(e) => setForm((prev) => ({ ...prev, userType: e.target.value }))}>
-                <option value="TENANT_ADMIN">TENANT_ADMIN</option>
-                <option value="NORMAL">NORMAL</option>
-              </select>
+              <Select value={form.userType} onValueChange={(value) => setForm((prev) => ({ ...prev, userType: value || 'NORMAL' }))}>
+                <SelectTrigger className="app-select-trigger">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="app-select-content">
+                  <SelectItem value="TENANT_ADMIN">TENANT_ADMIN</SelectItem>
+                  <SelectItem value="NORMAL">NORMAL</SelectItem>
+                </SelectContent>
+              </Select>
               <label>部门</label>
-              <select value={form.deptId} onChange={(e) => setForm((prev) => ({ ...prev, deptId: e.target.value }))}>
-                <option value="">未分配</option>
-                {deptOptions.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.label}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={form.deptId || '__NONE__'}
+                onValueChange={(value) => setForm((prev) => ({ ...prev, deptId: value && value !== '__NONE__' ? value : '' }))}
+              >
+                <SelectTrigger className="app-select-trigger">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="app-select-content">
+                  <SelectItem value="__NONE__">未分配</SelectItem>
+                  {deptOptions.map((dept) => (
+                    <SelectItem key={dept.id} value={String(dept.id)}>
+                      {dept.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <label>分配角色</label>
               <div className="checkbox-grid">
                 {roles.map((role) => (
-                  <label key={role.id}>
-                    <input
-                      type="checkbox"
+                  <label key={role.id} className="app-check-label">
+                    <Checkbox
                       checked={form.roleIds.includes(String(role.id))}
-                      onChange={(e) => {
+                      onCheckedChange={(checked) => {
                         setForm((prev) => ({
                           ...prev,
-                          roleIds: e.target.checked
+                          roleIds: checked
                             ? [...prev.roleIds, String(role.id)]
                             : prev.roleIds.filter((item) => item !== String(role.id)),
                         }))

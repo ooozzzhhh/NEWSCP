@@ -9,7 +9,7 @@ $root = $PSScriptRoot
 
 Write-Host ">> 新机器请先确认（Git 不跟踪、需在本机准备）："
 Write-Host "   1) MySQL：创建库 nscp_dev（或与 application.properties 中 URL 一致），并执行脚本："
-Write-Host "      $root\backend\src\main\resources\db\stage1_schema.sql"
+Write-Host "      $root\backend\src\main\resources\db\stage1_init.sql"
 Write-Host "   2) 编辑 backend\src\main\resources\application.properties：数据源地址/账号/密码与本机 MySQL 一致。"
 Write-Host "   3) 若使用自定义 GRADLE_USER_HOME（例如 backend\.gradle-home），该目录已在 .gitignore 中，勿提交。"
 Write-Host ""

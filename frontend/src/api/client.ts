@@ -11,6 +11,12 @@ client.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  const state = useAuthStore.getState()
+  const sessionTenant = state.session?.tenantId
+  const activeTenantId = state.activeTenantId
+  if (activeTenantId && sessionTenant && activeTenantId !== sessionTenant) {
+    config.headers['X-Tenant-Id'] = activeTenantId
+  }
   return config
 })
 
