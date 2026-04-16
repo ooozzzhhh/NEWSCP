@@ -1,9 +1,17 @@
 import { client } from '@/api/client'
 import type { ApiResponse, PageResult } from '@/types/api'
 import type {
+  DictBatchSortPayload,
+  DictDropdownMap,
+  DictItemPayload,
+  DictItemRow,
+  DictTypePayload,
+  DictTypeRow,
   DeptCreatePayload,
   DeptNode,
   DeptUpdatePayload,
+  PasswordPolicyPayload,
+  PasswordPolicySettings,
   DeptUser,
   PermissionCreatePayload,
   PermissionNode,
@@ -203,5 +211,69 @@ export async function updatePermission(id: number, payload: PermissionUpdatePayl
 
 export async function deletePermission(id: number) {
   const response = await client.delete<ApiResponse<void>>(`/api/sys/permissions/${id}`)
+  return response.data
+}
+
+export async function fetchPasswordPolicy() {
+  const response = await client.get<ApiResponse<PasswordPolicySettings>>('/api/sys/password-policy')
+  return response.data
+}
+
+export async function updatePasswordPolicy(payload: PasswordPolicyPayload) {
+  const response = await client.put<ApiResponse<void>>('/api/sys/password-policy', payload)
+  return response.data
+}
+
+export async function fetchDictTypes(params: { page: number; size: number; keyword?: string }) {
+  const response = await client.get<ApiResponse<PageResult<DictTypeRow>>>('/api/sys/dict-types', { params })
+  return response.data
+}
+
+export async function createDictType(payload: DictTypePayload) {
+  const response = await client.post<ApiResponse<number>>('/api/sys/dict-types', payload)
+  return response.data
+}
+
+export async function updateDictType(id: number, payload: DictTypePayload) {
+  const response = await client.put<ApiResponse<void>>(`/api/sys/dict-types/${id}`, payload)
+  return response.data
+}
+
+export async function deleteDictType(id: number) {
+  const response = await client.delete<ApiResponse<void>>(`/api/sys/dict-types/${id}`)
+  return response.data
+}
+
+export async function fetchDictItems(typeCode: string) {
+  const response = await client.get<ApiResponse<DictItemRow[]>>('/api/sys/dict-items', { params: { typeCode } })
+  return response.data
+}
+
+export async function createDictItem(payload: DictItemPayload) {
+  const response = await client.post<ApiResponse<number>>('/api/sys/dict-items', payload)
+  return response.data
+}
+
+export async function updateDictItem(id: number, payload: DictItemPayload) {
+  const response = await client.put<ApiResponse<void>>(`/api/sys/dict-items/${id}`, payload)
+  return response.data
+}
+
+export async function deleteDictItem(id: number) {
+  const response = await client.delete<ApiResponse<void>>(`/api/sys/dict-items/${id}`)
+  return response.data
+}
+
+export async function batchSortDictItems(payload: DictBatchSortPayload) {
+  const response = await client.put<ApiResponse<void>>('/api/sys/dict-items/batch-sort', payload)
+  return response.data
+}
+
+export async function fetchDictDropdown(typeCodes: string[]) {
+  const response = await client.get<ApiResponse<DictDropdownMap>>('/api/sys/dict/dropdown', {
+    params: {
+      typeCodes: typeCodes.join(','),
+    },
+  })
   return response.data
 }

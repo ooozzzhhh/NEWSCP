@@ -217,3 +217,94 @@ export interface PermissionUpdatePayload {
   isHidden: number
   status: 'ENABLED' | 'DISABLED'
 }
+
+export interface PasswordPolicySettings {
+  id: number
+  tenantId: string
+  minLength: number
+  maxLength: number
+  requireDigit: 0 | 1
+  requireLower: 0 | 1
+  requireUpper: 0 | 1
+  requireSpecial: 0 | 1
+  expireEnabled: 0 | 1
+  expireDays: number
+  alertBeforeDays: number
+  forceChangeDefault: 0 | 1
+  forceChangeOnRuleUpdate: 0 | 1
+  lockEnabled: 0 | 1
+  lockThreshold: number
+  lockDuration: number
+  autoUnlock: 0 | 1
+  defaultPassword: string
+}
+
+export type PasswordPolicyPayload = Omit<PasswordPolicySettings, 'id' | 'tenantId'>
+
+export interface DictTypeRow {
+  id: number
+  tenantId: string
+  typeCode: string
+  typeName: string
+  source: 'BUILTIN' | 'CUSTOM'
+  editable: 0 | 1
+  status: 0 | 1
+  sortOrder: number
+  remark?: string
+}
+
+export interface DictTypePayload {
+  typeCode: string
+  typeName: string
+  source: 'BUILTIN' | 'CUSTOM'
+  editable: 0 | 1
+  status: 0 | 1
+  sortOrder: number
+  remark?: string
+}
+
+export interface DictItemRow {
+  id: number
+  tenantId: string
+  typeCode: string
+  value: string
+  label: string
+  labelEn?: string
+  color?: string
+  extra?: string
+  sortOrder: number
+  status: 0 | 1
+  isDefault: 0 | 1
+  remark?: string
+}
+
+export interface DictItemPayload {
+  typeCode: string
+  value: string
+  label: string
+  labelEn?: string
+  color?: string
+  extra?: string
+  sortOrder: number
+  status: 0 | 1
+  isDefault: 0 | 1
+  remark?: string
+}
+
+export interface DictBatchSortPayload {
+  items: Array<{
+    id: number
+    sortOrder: number
+  }>
+}
+
+export interface DictOption {
+  typeCode?: string
+  value: string
+  label: string
+  color?: string
+  isDefault: 0 | 1
+  sortOrder?: number
+}
+
+export type DictDropdownMap = Record<string, DictOption[]>

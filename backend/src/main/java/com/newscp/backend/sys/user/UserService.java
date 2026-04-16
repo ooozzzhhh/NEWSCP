@@ -11,6 +11,8 @@ import com.newscp.backend.sys.dept.mapper.SysUserDeptMapper;
 import com.newscp.backend.sys.role.entity.SysRole;
 import com.newscp.backend.sys.role.mapper.SysRoleMapper;
 import com.newscp.backend.sys.role.mapper.SysUserRoleMapper;
+import com.newscp.backend.sys.security.PasswordPolicyService;
+import com.newscp.backend.sys.security.entity.PasswordPolicy;
 import com.newscp.backend.sys.user.dto.PasswordChangeDTO;
 import com.newscp.backend.sys.user.dto.UserCreateDTO;
 import com.newscp.backend.sys.user.dto.UserPageQueryDTO;
@@ -30,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,8 +46,8 @@ public class UserService {
     private final SysDeptMapper deptMapper;
     private final SysUserDeptMapper userDeptMapper;
     private final SysUserTenantMapper userTenantMapper;
+    private final PasswordPolicyService passwordPolicyService;
     private final PasswordEncoder passwordEncoder;
-    private final String defaultPassword;
 
     public UserService(
             SysUserMapper userMapper,
@@ -55,8 +56,8 @@ public class UserService {
             SysDeptMapper deptMapper,
             SysUserDeptMapper userDeptMapper,
             SysUserTenantMapper userTenantMapper,
-            PasswordEncoder passwordEncoder,
-            @Value("${sys.default.password:Admin@2026}") String defaultPassword
+            PasswordPolicyService passwordPolicyService,
+            PasswordEncoder passwordEncoder
     ) {
         this.userMapper = userMapper;
         this.roleMapper = roleMapper;
@@ -64,8 +65,8 @@ public class UserService {
         this.deptMapper = deptMapper;
         this.userDeptMapper = userDeptMapper;
         this.userTenantMapper = userTenantMapper;
+        this.passwordPolicyService = passwordPolicyService;
         this.passwordEncoder = passwordEncoder;
-        this.defaultPassword = defaultPassword;
     }
 
     public PageResult<UserVO> page(UserPageQueryDTO query) {
@@ -123,16 +124,19 @@ public class UserService {
     @Transactional
     public Long create(UserCreateDTO dto) {
         validateUserCreate(dto);
+        String tenantId = TenantContext.getTenantId();
+        PasswordPolicy policy = passwordPolicyService.getEffective(tenantId);
+        String defaultPassword = policy.getDefaultPassword();
         SysUser user = new SysUser();
         user.setUsername(dto.username().trim());
-        user.setTenantId(TenantContext.getTenantId());
+        user.setTenantId(tenantId);
         user.setRealName(dto.realName().trim());
         user.setEmail(normalize(dto.email()));
         user.setPhone(normalize(dto.phone()));
         user.setUserType(StringUtils.hasText(dto.userType()) ? dto.userType().trim() : "NORMAL");
         user.setStatus("ACTIVE");
         user.setPasswordHash(passwordEncoder.encode(defaultPassword));
-        user.setPwdChangedAt(LocalDateTime.now());
+        user.setPwdChangedAt(null);
         user.setLoginFailCount(0);
         user.setCreatedBy(SecurityUtils.getCurrentUserId());
         user.setCreatedAt(LocalDateTime.now());
@@ -223,8 +227,9 @@ public class UserService {
 
     @Transactional
     public ResetPasswordVO resetPassword(Long id) {
-        getUserOrThrow(id);
-        userMapper.updatePassword(id, passwordEncoder.encode(defaultPassword), LocalDateTime.now());
+        SysUser user = getUserOrThrow(id);
+        String defaultPassword = passwordPolicyService.getDefaultPassword(user.getTenantId());
+        userMapper.updatePassword(id, passwordEncoder.encode(defaultPassword), null);
         return new ResetPasswordVO(defaultPassword);
     }
 
@@ -250,6 +255,7 @@ public class UserService {
     public void changePassword(PasswordChangeDTO dto) {
         Long userId = Long.parseLong(SecurityUtils.getCurrentUserId());
         SysUser user = getUserOrThrow(userId);
+        PasswordPolicy policy = passwordPolicyService.getEffective(user.getTenantId());
         if (!passwordEncoder.matches(dto.oldPassword(), user.getPasswordHash())) {
             throw new BusinessException("旧密码错误");
         }
@@ -259,8 +265,9 @@ public class UserService {
         if (!dto.newPassword().equals(dto.confirmPassword())) {
             throw new BusinessException("新密码与确认密码不一致");
         }
-        if (!isPasswordStrong(dto.newPassword())) {
-            throw new BusinessException("新密码复杂度不足（至少8位，含大小写字母、数字和特殊字符）");
+        List<String> errors = passwordPolicyService.validatePassword(dto.newPassword(), policy);
+        if (!errors.isEmpty()) {
+            throw new BusinessException("新密码不符合策略：" + String.join("；", errors));
         }
         userMapper.updatePassword(userId, passwordEncoder.encode(dto.newPassword()), LocalDateTime.now());
     }
@@ -336,12 +343,4 @@ public class UserService {
         return value.trim();
     }
 
-    private boolean isPasswordStrong(String value) {
-        return value != null
-                && value.length() >= 8
-                && value.matches(".*[a-z].*")
-                && value.matches(".*[A-Z].*")
-                && value.matches(".*\\d.*")
-                && value.matches(".*[^A-Za-z0-9].*");
-    }
 }

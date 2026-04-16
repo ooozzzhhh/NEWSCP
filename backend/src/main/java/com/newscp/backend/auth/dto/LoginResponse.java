@@ -10,6 +10,7 @@ public record LoginResponse(
         String username,
         String realName,
         String tenantId,
-        List<String> roles
+        List<String> roles,
+        String pwdExpireWarning
 ) {
 }

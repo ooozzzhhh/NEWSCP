@@ -16,7 +16,9 @@ INSERT INTO nscp_sys_permission (
     (7, 5, 'MENU', 'menu:master:stock', '库存点管理', '/app/master/stock-point', 'master/stock-point/index', NULL, 22, 0, 'ENABLED', 'seed', NOW(), 0),
     (8, 5, 'MENU', 'menu:master:customer', '客户管理', '/app/master/customer', 'master/customer/index', NULL, 23, 0, 'ENABLED', 'seed', NOW(), 0),
     (25, 1, 'MENU', 'menu:sys:tenant', '租户管理', '/app/system/tenants', 'system/tenants/index', 'BankOutlined', 14, 0, 'ENABLED', 'seed', NOW(), 0),
-    (26, 1, 'MENU', 'menu:sys:permission', '菜单权限运营', '/app/system/permissions', 'system/permissions/index', 'SafetyOutlined', 15, 0, 'ENABLED', 'seed', NOW(), 0)
+    (26, 1, 'MENU', 'menu:sys:permission', '菜单权限运营', '/app/system/permissions', 'system/permissions/index', 'SafetyOutlined', 15, 0, 'ENABLED', 'seed', NOW(), 0),
+    (37, 1, 'MENU', 'menu:sys:security', '安全策略', '/app/system/security-policy', 'system/security-policy/index', 'SafetyCertificateOutlined', 16, 0, 'ENABLED', 'seed', NOW(), 0),
+    (40, 1, 'MENU', 'menu:sys:dict', '枚举字典', '/app/system/dicts', 'system/dicts/index', 'TagsOutlined', 17, 0, 'ENABLED', 'seed', NOW(), 0)
 ON DUPLICATE KEY UPDATE
     perm_name = VALUES(perm_name),
     route_path = VALUES(route_path),
@@ -54,7 +56,13 @@ INSERT INTO nscp_sys_permission (
     (33, 26, 'BUTTON', 'sys:perm:list', '权限-列表', NULL, NULL, NULL, 1, 1, 'ENABLED', 'seed', NOW(), 0),
     (34, 26, 'BUTTON', 'sys:perm:create', '权限-新增', NULL, NULL, NULL, 2, 1, 'ENABLED', 'seed', NOW(), 0),
     (35, 26, 'BUTTON', 'sys:perm:update', '权限-编辑', NULL, NULL, NULL, 3, 1, 'ENABLED', 'seed', NOW(), 0),
-    (36, 26, 'BUTTON', 'sys:perm:delete', '权限-删除', NULL, NULL, NULL, 4, 1, 'ENABLED', 'seed', NOW(), 0)
+    (36, 26, 'BUTTON', 'sys:perm:delete', '权限-删除', NULL, NULL, NULL, 4, 1, 'ENABLED', 'seed', NOW(), 0),
+    (38, 37, 'BUTTON', 'sys:security:view', '安全策略-查看', NULL, NULL, NULL, 1, 1, 'ENABLED', 'seed', NOW(), 0),
+    (39, 37, 'BUTTON', 'sys:security:edit', '安全策略-编辑', NULL, NULL, NULL, 2, 1, 'ENABLED', 'seed', NOW(), 0),
+    (41, 40, 'BUTTON', 'sys:dict:list', '字典-列表', NULL, NULL, NULL, 1, 1, 'ENABLED', 'seed', NOW(), 0),
+    (42, 40, 'BUTTON', 'sys:dict:create', '字典-新增类型', NULL, NULL, NULL, 2, 1, 'ENABLED', 'seed', NOW(), 0),
+    (43, 40, 'BUTTON', 'sys:dict:edit', '字典-编辑', NULL, NULL, NULL, 3, 1, 'ENABLED', 'seed', NOW(), 0),
+    (44, 40, 'BUTTON', 'sys:dict:delete', '字典-删除类型', NULL, NULL, NULL, 4, 1, 'ENABLED', 'seed', NOW(), 0)
 ON DUPLICATE KEY UPDATE
     perm_name = VALUES(perm_name),
     route_path = VALUES(route_path),

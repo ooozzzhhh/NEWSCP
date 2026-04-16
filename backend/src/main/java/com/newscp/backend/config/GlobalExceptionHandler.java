@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException exception) {
-        return ResponseEntity.badRequest().body(ApiResponse.fail(40000, exception.getMessage()));
+        return ResponseEntity.badRequest().body(ApiResponse.fail(exception.getCode(), exception.getMessage()));
     }
 
     @ExceptionHandler(DuplicateKeyException.class)

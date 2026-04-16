@@ -7,6 +7,7 @@ export interface LoginPayload {
   realName: string
   tenantId: string
   roles: string[]
+  pwdExpireWarning?: string
 }
 
 export interface LoginRequest {
@@ -24,4 +25,5 @@ export interface AuthSession {
   realName: string
   tenantId: string
   roles: string[]
+  pwdExpireWarning?: string
 }

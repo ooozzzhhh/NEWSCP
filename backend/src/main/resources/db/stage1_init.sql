@@ -118,6 +118,72 @@ CREATE TABLE IF NOT EXISTS nscp_sys_user_dept (
     INDEX idx_dept_id (dept_id)
 ) COMMENT '用户-部门关联表';
 
+CREATE TABLE IF NOT EXISTS nscp_sys_password_policy (
+    id                          BIGINT          NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
+    tenant_id                   VARCHAR(64)     NOT NULL                           COMMENT '租户ID（每租户一条）',
+    min_length                  INT             NOT NULL DEFAULT 8                 COMMENT '最小长度',
+    max_length                  INT             NOT NULL DEFAULT 32                COMMENT '最大长度',
+    require_digit               TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '要求包含数字',
+    require_lower               TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '要求包含小写字母',
+    require_upper               TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '要求包含大写字母',
+    require_special             TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '要求包含特殊符号',
+    expire_enabled              TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '是否启用密码有效期',
+    expire_days                 INT             NOT NULL DEFAULT 90                COMMENT '密码有效天数',
+    alert_before_days           INT             NOT NULL DEFAULT 7                 COMMENT '过期前预警天数',
+    force_change_default        TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '首次使用默认密码时强制修改',
+    force_change_on_rule_update TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '策略更新后强制不符合用户修改密码',
+    lock_enabled                TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '是否启用登录失败锁定',
+    lock_threshold              INT             NOT NULL DEFAULT 5                 COMMENT '连续失败N次后锁定',
+    lock_duration               INT             NOT NULL DEFAULT 30                COMMENT '锁定时长（分钟）',
+    auto_unlock                 TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '是否到期自动解锁',
+    default_password            VARCHAR(128)    NOT NULL DEFAULT 'Admin@2026'      COMMENT '管理员重置密码时的默认密码（明文存储）',
+    created_by                  VARCHAR(64)                                         COMMENT '创建人',
+    created_at                  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by                  VARCHAR(64)                                         COMMENT '修改人',
+    updated_at                  DATETIME                 ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    UNIQUE KEY uk_tenant (tenant_id)
+) COMMENT '密码与安全策略（每租户一条）';
+
+CREATE TABLE IF NOT EXISTS nscp_sys_dict_type (
+    id          BIGINT          NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
+    tenant_id   VARCHAR(64)     NOT NULL                           COMMENT '租户ID',
+    type_code   VARCHAR(64)     NOT NULL                           COMMENT '类型编码',
+    type_name   VARCHAR(128)    NOT NULL                           COMMENT '类型名称',
+    source      VARCHAR(16)     NOT NULL DEFAULT 'CUSTOM'          COMMENT '来源：BUILTIN/CUSTOM',
+    editable    TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '是否允许编辑',
+    status      TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '1=启用, 0=禁用',
+    sort_order  INT             NOT NULL DEFAULT 0                 COMMENT '排序',
+    remark      VARCHAR(500)                                        COMMENT '备注',
+    created_by  VARCHAR(64)                                         COMMENT '创建人',
+    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by  VARCHAR(64)                                         COMMENT '修改人',
+    updated_at  DATETIME                 ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    deleted     TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '逻辑删除',
+    UNIQUE KEY uk_tenant_code (tenant_id, type_code, deleted)
+) COMMENT '枚举/字典类型';
+
+CREATE TABLE IF NOT EXISTS nscp_sys_dict_item (
+    id          BIGINT          NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
+    tenant_id   VARCHAR(64)     NOT NULL                           COMMENT '租户ID',
+    type_code   VARCHAR(64)     NOT NULL                           COMMENT '所属类型编码',
+    value       VARCHAR(64)     NOT NULL                           COMMENT '枚举值',
+    label       VARCHAR(128)    NOT NULL                           COMMENT '显示文本',
+    label_en    VARCHAR(128)                                        COMMENT '英文显示文本',
+    color       VARCHAR(32)                                         COMMENT '前端颜色/样式',
+    extra       VARCHAR(512)                                        COMMENT '扩展JSON',
+    sort_order  INT             NOT NULL DEFAULT 0                 COMMENT '排序',
+    status      TINYINT(1)      NOT NULL DEFAULT 1                 COMMENT '1=启用, 0=禁用',
+    is_default  TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '是否默认项',
+    remark      VARCHAR(500)                                        COMMENT '备注',
+    created_by  VARCHAR(64)                                         COMMENT '创建人',
+    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by  VARCHAR(64)                                         COMMENT '修改人',
+    updated_at  DATETIME                 ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    deleted     TINYINT(1)      NOT NULL DEFAULT 0                 COMMENT '逻辑删除',
+    UNIQUE KEY uk_tenant_type_value (tenant_id, type_code, value, deleted),
+    INDEX idx_type_code (tenant_id, type_code, status, sort_order)
+) COMMENT '枚举/字典项';
+
 
 -- =============================================================================
 -- 种子数据：菜单与按钮权限（perm_code 与前端路由、后端 @PreAuthorize 约定一致）
@@ -137,7 +203,9 @@ INSERT INTO nscp_sys_permission (
     (7, 5, 'MENU', 'menu:master:stock', '库存点管理', '/app/master/stock-point', 'master/stock-point/index', NULL, 22, 0, 'ENABLED', 'seed', NOW(), 0),
     (8, 5, 'MENU', 'menu:master:customer', '客户管理', '/app/master/customer', 'master/customer/index', NULL, 23, 0, 'ENABLED', 'seed', NOW(), 0),
     (25, 1, 'MENU', 'menu:sys:tenant', '租户管理', '/app/system/tenants', 'system/tenants/index', 'BankOutlined', 14, 0, 'ENABLED', 'seed', NOW(), 0),
-    (26, 1, 'MENU', 'menu:sys:permission', '菜单权限运营', '/app/system/permissions', 'system/permissions/index', 'SafetyOutlined', 15, 0, 'ENABLED', 'seed', NOW(), 0)
+    (26, 1, 'MENU', 'menu:sys:permission', '菜单权限运营', '/app/system/permissions', 'system/permissions/index', 'SafetyOutlined', 15, 0, 'ENABLED', 'seed', NOW(), 0),
+    (37, 1, 'MENU', 'menu:sys:security', '安全策略', '/app/system/security-policy', 'system/security-policy/index', 'SafetyCertificateOutlined', 16, 0, 'ENABLED', 'seed', NOW(), 0),
+    (40, 1, 'MENU', 'menu:sys:dict', '枚举字典', '/app/system/dicts', 'system/dicts/index', 'TagsOutlined', 17, 0, 'ENABLED', 'seed', NOW(), 0)
 ON DUPLICATE KEY UPDATE
     perm_name = VALUES(perm_name),
     route_path = VALUES(route_path),
@@ -175,7 +243,13 @@ INSERT INTO nscp_sys_permission (
     (33, 26, 'BUTTON', 'sys:perm:list', '权限-列表', NULL, NULL, NULL, 1, 1, 'ENABLED', 'seed', NOW(), 0),
     (34, 26, 'BUTTON', 'sys:perm:create', '权限-新增', NULL, NULL, NULL, 2, 1, 'ENABLED', 'seed', NOW(), 0),
     (35, 26, 'BUTTON', 'sys:perm:update', '权限-编辑', NULL, NULL, NULL, 3, 1, 'ENABLED', 'seed', NOW(), 0),
-    (36, 26, 'BUTTON', 'sys:perm:delete', '权限-删除', NULL, NULL, NULL, 4, 1, 'ENABLED', 'seed', NOW(), 0)
+    (36, 26, 'BUTTON', 'sys:perm:delete', '权限-删除', NULL, NULL, NULL, 4, 1, 'ENABLED', 'seed', NOW(), 0),
+    (38, 37, 'BUTTON', 'sys:security:view', '安全策略-查看', NULL, NULL, NULL, 1, 1, 'ENABLED', 'seed', NOW(), 0),
+    (39, 37, 'BUTTON', 'sys:security:edit', '安全策略-编辑', NULL, NULL, NULL, 2, 1, 'ENABLED', 'seed', NOW(), 0),
+    (41, 40, 'BUTTON', 'sys:dict:list', '字典-列表', NULL, NULL, NULL, 1, 1, 'ENABLED', 'seed', NOW(), 0),
+    (42, 40, 'BUTTON', 'sys:dict:create', '字典-新增类型', NULL, NULL, NULL, 2, 1, 'ENABLED', 'seed', NOW(), 0),
+    (43, 40, 'BUTTON', 'sys:dict:edit', '字典-编辑', NULL, NULL, NULL, 3, 1, 'ENABLED', 'seed', NOW(), 0),
+    (44, 40, 'BUTTON', 'sys:dict:delete', '字典-删除类型', NULL, NULL, NULL, 4, 1, 'ENABLED', 'seed', NOW(), 0)
 ON DUPLICATE KEY UPDATE
     perm_name = VALUES(perm_name),
     route_path = VALUES(route_path),
@@ -221,7 +295,8 @@ INSERT INTO nscp_sys_role_permission (role_id, perm_id) VALUES
     (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8),
     (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14),
     (1, 15), (1, 16), (1, 17), (1, 18), (1, 19), (1, 20),
-    (1, 21), (1, 22), (1, 23), (1, 24)
+    (1, 21), (1, 22), (1, 23), (1, 24),
+    (1, 37), (1, 38), (1, 39), (1, 40), (1, 41), (1, 42), (1, 43), (1, 44)
 ON DUPLICATE KEY UPDATE role_id = VALUES(role_id);
 
 INSERT INTO nscp_sys_user_role (user_id, role_id) VALUES (1, 1)

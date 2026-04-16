@@ -4,6 +4,11 @@ export interface ApiResponse<T> {
   msg: string
 }
 
+export interface ApiError {
+  code: number
+  msg: string
+}
+
 export interface PageResult<T> {
   total: number
   page: number

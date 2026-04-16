@@ -22,6 +22,12 @@ a {
   font-size: 13px;
 }
 
+.success-msg {
+  margin: 0;
+  color: #34d399;
+  font-size: 13px;
+}
+
 .login-shell {
   position: relative;
   min-height: 100vh;
@@ -1084,6 +1090,232 @@ a {
   color: #67e8f9;
 }
 
+.policy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.policy-card {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(6, 10, 18, 0.55);
+  display: grid;
+  gap: 10px;
+}
+
+.policy-card h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.policy-form-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.policy-form-grid-single {
+  gap: 6px;
+}
+
+.policy-field-row {
+  display: grid;
+  gap: 6px;
+}
+
+.policy-field-name {
+  font-size: 13px;
+  color: #bfdbfe;
+}
+
+.policy-input {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  line-height: 1;
+  font-size: 14px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.policy-input:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.9);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+}
+
+.policy-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  width: fit-content;
+}
+
+.toggle-btn {
+  width: 64px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  height: 30px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.toggle-btn.on {
+  border-color: rgba(6, 182, 212, 0.5);
+  background: rgba(6, 182, 212, 0.2);
+  color: #67e8f9;
+}
+
+.toggle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.policy-strength {
+  margin: 0;
+  color: #bae6fd;
+  font-size: 13px;
+}
+
+.dict-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+}
+
+.dict-type-list {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(6, 10, 18, 0.55);
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.dict-type-list h3,
+.dict-item-panel h3 {
+  margin: 0;
+}
+
+.dict-type-item {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.dict-type-item.active {
+  border-color: rgba(6, 182, 212, 0.5);
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.dict-type-main {
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  display: grid;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.dict-type-main strong {
+  color: #f0f9ff;
+}
+
+.dict-type-main span {
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.dict-type-main small {
+  color: #7dd3fc;
+  font-size: 11px;
+}
+
+.dict-item-panel {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(6, 10, 18, 0.55);
+  display: grid;
+  gap: 10px;
+}
+
+.form-grid select {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  line-height: 1;
+  font-size: 14px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.app-select-native {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  line-height: 1;
+  font-size: 14px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.force-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.6);
+  display: grid;
+  place-items: center;
+  z-index: 60;
+}
+
+.force-card {
+  width: min(520px, calc(100vw - 28px));
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 16px;
+  padding: 18px;
+  background: linear-gradient(165deg, rgba(9, 14, 26, 0.95), rgba(6, 10, 18, 0.88));
+  display: grid;
+  gap: 10px;
+}
+
+.force-card h3 {
+  margin: 0;
+}
+
+.force-card p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.force-card input {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: rgba(15, 23, 42, 0.58);
+  color: #f8fafc;
+}
+
+.force-action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 900px) {
   .login-layout {
     width: min(680px, calc(100% - 30px));
@@ -1119,6 +1351,10 @@ a {
   }
 
   .dept-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dict-layout {
     grid-template-columns: 1fr;
   }
 

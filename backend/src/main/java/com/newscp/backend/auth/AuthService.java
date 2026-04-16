@@ -3,9 +3,12 @@ package com.newscp.backend.auth;
 import com.newscp.backend.auth.dto.LoginRequest;
 import com.newscp.backend.auth.dto.LoginResponse;
 import com.newscp.backend.auth.dto.MeResponse;
+import com.newscp.backend.auth.dto.ForceChangePasswordRequest;
 import com.newscp.backend.auth.jwt.JwtTokenProvider;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.newscp.backend.common.exception.BusinessException;
+import com.newscp.backend.sys.security.PasswordPolicyService;
+import com.newscp.backend.sys.security.entity.PasswordPolicy;
 import com.newscp.backend.sys.role.mapper.SysPermissionMapper;
 import com.newscp.backend.sys.role.mapper.SysRoleMapper;
 import com.newscp.backend.sys.user.entity.SysUser;
@@ -26,14 +29,13 @@ import org.springframework.util.StringUtils;
 public class AuthService {
 
     private static final String DEFAULT_TENANT_ID = "admin";
-    private static final int LOCK_THRESHOLD = 5;
-    private static final int LOCK_MINUTES = 30;
 
     private final SysUserMapper userMapper;
     private final SysRoleMapper roleMapper;
     private final SysPermissionMapper permissionMapper;
     private final SysTenantMapper tenantMapper;
     private final SysUserTenantMapper userTenantMapper;
+    private final PasswordPolicyService passwordPolicyService;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
@@ -43,6 +45,7 @@ public class AuthService {
             SysPermissionMapper permissionMapper,
             SysTenantMapper tenantMapper,
             SysUserTenantMapper userTenantMapper,
+            PasswordPolicyService passwordPolicyService,
             JwtTokenProvider jwtTokenProvider,
             PasswordEncoder passwordEncoder
     ) {
@@ -51,6 +54,7 @@ public class AuthService {
         this.permissionMapper = permissionMapper;
         this.tenantMapper = tenantMapper;
         this.userTenantMapper = userTenantMapper;
+        this.passwordPolicyService = passwordPolicyService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
     }
@@ -74,18 +78,36 @@ public class AuthService {
         }
         validateTenantLoginScope(user, tenantId);
 
-        checkUserStatus(user);
+        PasswordPolicy policy = passwordPolicyService.getEffective(tenantId);
+        checkUserStatus(user, policy);
 
+        int failCountBefore = user.getLoginFailCount() == null ? 0 : user.getLoginFailCount();
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            handleLoginFailure(user);
-            int remaining = LOCK_THRESHOLD - (user.getLoginFailCount() + 1);
+            handleLoginFailure(user, policy);
+            int threshold = passwordPolicyService.getLockThreshold(policy);
+            if (threshold == Integer.MAX_VALUE) {
+                throw new BusinessException("用户名或密码错误");
+            }
+            int remaining = threshold - (failCountBefore + 1);
             if (remaining <= 0) {
-                throw new BusinessException("用户名或密码错误，账号已被锁定，请 " + LOCK_MINUTES + " 分钟后重试");
+                int lockMinutes = passwordPolicyService.getLockDuration(policy);
+                throw new BusinessException("用户名或密码错误，账号已被锁定，请 " + lockMinutes + " 分钟后重试");
             }
             throw new BusinessException("用户名或密码错误，还剩 " + remaining + " 次机会");
         }
 
+        String expiredMsg = passwordPolicyService.checkExpired(user, policy);
+        if (expiredMsg != null) {
+            throw new BusinessException(600, expiredMsg);
+        }
+
+        String forceMsg = passwordPolicyService.checkForceChange(user, request.password(), policy);
+        if (forceMsg != null) {
+            throw new BusinessException(600, forceMsg);
+        }
+
         handleLoginSuccess(user);
+        String pwdExpireWarning = passwordPolicyService.getExpirationWarning(user, policy);
 
         List<String> roles = roleMapper.selectRoleCodesByUserIdIgnoreTenant(user.getId());
 
@@ -104,8 +126,46 @@ public class AuthService {
                 user.getUsername(),
                 user.getRealName(),
                 tenantId,
-                roles
+                roles,
+                pwdExpireWarning
         );
+    }
+
+    @Transactional
+    public void forceChangePassword(ForceChangePasswordRequest request) {
+        String tenantId = StringUtils.hasText(request.tenantId())
+                ? request.tenantId().trim()
+                : DEFAULT_TENANT_ID;
+        TenantContext.setTenantId(tenantId);
+        SysUser user;
+        try {
+            user = userMapper.selectByTenantAndUsername(tenantId, request.username());
+        } finally {
+            TenantContext.clear();
+        }
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        validateTenantLoginScope(user, tenantId);
+        PasswordPolicy policy = passwordPolicyService.getEffective(tenantId);
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPasswordHash())) {
+            throw new BusinessException("旧密码错误");
+        }
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new BusinessException("新密码与确认密码不一致");
+        }
+        if (request.newPassword().equals(request.oldPassword())) {
+            throw new BusinessException("新密码不能与旧密码相同");
+        }
+
+        List<String> errors = passwordPolicyService.validatePassword(request.newPassword(), policy);
+        if (!errors.isEmpty()) {
+            throw new BusinessException("新密码不符合策略：" + String.join("；", errors));
+        }
+        userMapper.updatePassword(user.getId(), passwordEncoder.encode(request.newPassword()), LocalDateTime.now());
+        userMapper.resetLock(user.getId());
+        userMapper.recordLoginSuccess(user.getId(), LocalDateTime.now());
     }
 
     public MeResponse getMe(String userId) {
@@ -125,14 +185,18 @@ public class AuthService {
         );
     }
 
-    private void checkUserStatus(SysUser user) {
+    private void checkUserStatus(SysUser user, PasswordPolicy policy) {
         if ("DISABLED".equals(user.getStatus())) {
             throw new BusinessException("账号已禁用，请联系管理员");
         }
         if ("LOCKED".equals(user.getStatus())) {
-            if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+            boolean autoUnlock = passwordPolicyService.isAutoUnlock(policy);
+            if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now()) && autoUnlock) {
                 long minutes = Duration.between(LocalDateTime.now(), user.getLockedUntil()).toMinutes() + 1;
                 throw new BusinessException("账号已锁定，请 " + minutes + " 分钟后重试");
+            }
+            if (!autoUnlock) {
+                throw new BusinessException("账号已锁定，请联系管理员解锁");
             }
             userMapper.resetLock(user.getId());
             user.setStatus("ACTIVE");
@@ -140,10 +204,18 @@ public class AuthService {
         }
     }
 
-    private void handleLoginFailure(SysUser user) {
+    private void handleLoginFailure(SysUser user, PasswordPolicy policy) {
+        if (passwordPolicyService.getLockDuration(policy) <= 0
+                || passwordPolicyService.getLockThreshold(policy) == Integer.MAX_VALUE) {
+            int failCount = (user.getLoginFailCount() == null ? 0 : user.getLoginFailCount()) + 1;
+            userMapper.incrementFailCount(user.getId(), failCount);
+            return;
+        }
         int failCount = (user.getLoginFailCount() == null ? 0 : user.getLoginFailCount()) + 1;
-        if (failCount >= LOCK_THRESHOLD) {
-            userMapper.lockUser(user.getId(), LocalDateTime.now().plusMinutes(LOCK_MINUTES), failCount);
+        int lockThreshold = passwordPolicyService.getLockThreshold(policy);
+        if (failCount >= lockThreshold) {
+            int lockMinutes = passwordPolicyService.getLockDuration(policy);
+            userMapper.lockUser(user.getId(), LocalDateTime.now().plusMinutes(lockMinutes), failCount);
             return;
         }
         userMapper.incrementFailCount(user.getId(), failCount);
